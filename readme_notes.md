@@ -1,11 +1,18 @@
+# Minishell notes
+
+## git commands
 git branch branch_name
+
 git checkout branch_name
+
 git add filename
+
 git commit -m "Your commit message here"
+
 git push --set-upstream origin branch_name
 
 
-Precendence of operators:
+## Precendence of operators:
 
 1. **Parentheses**: Commands and expressions within parentheses `()` are evaluated first.
    
@@ -39,7 +46,7 @@ Precendence of operators:
 
 16. **Compound Commands**: Compound commands such as `if`, `for`, `while`, and `until` have their own precedence rules within their respective constructs.
 
-Metacharacters in bash 
+##Metacharacters in bash 
 - **Command Separation**:
   - `;`: Separates multiple commands on the same line.
 
