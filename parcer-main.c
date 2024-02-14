@@ -1,5 +1,7 @@
 //#include <unistd.h>
+#include <stdio.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <linux/limits.h>
 #include "libft/libft.h"
 
@@ -10,7 +12,7 @@
 //# define ARG_MAX 100
 //#endif
 // for testing pupose let us use ARG_MAX = 3 at first
-#define ARG_MAX 3
+#define ARG_MAX 4
 
 
 //#include "types.h"
@@ -24,7 +26,7 @@
 #define LIST  4
 #define BACK  5
 
-#define MAXARGS 10
+// #define MAXARGS 10 redifined in ARG_MAX
 
 struct cmd 
 {
@@ -34,8 +36,8 @@ struct cmd
 struct execcmd 
 {
   int type;
-  char *argv[MAXARGS];
-  char *eargv[MAXARGS];
+  char *argv[ARG_MAX];
+  char *eargv[ARG_MAX];
 };
 
 struct redircmd {
@@ -69,10 +71,11 @@ void panic(char*);
 struct cmd *parsecmd(char*);
 
 
-// Execute cmd.  Never returns.
-//
-/*
-void runcmd(struct cmd *cmd)
+// Execute cmd.  Never returns. 
+// test version for testing AST
+// 
+
+void runcmd_test(struct cmd *cmd)
 {
   int p[2];
   struct backcmd *bcmd;
@@ -81,72 +84,76 @@ void runcmd(struct cmd *cmd)
   struct pipecmd *pcmd;
   struct redircmd *rcmd;
 
-  if(cmd == 0)
-    exit();
-
-  switch(cmd->type){
-  default:
-    panic("runcmd");
-
-  case EXEC:
+	if(cmd == 0)
+    exit(1);
+	else if (cmd->type == EXEC)
+	{
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
-      exit();
-    exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "exec %s failed\n", ecmd->argv[0]);
-    break;
-
-  case REDIR:
+      exit (1);
+		printf("argv=%s, %s, %s, %s\n", ecmd->argv[0], ecmd->argv[1], ecmd->argv[2], ecmd->argv[3]);
+	//    exec(ecmd->argv[0], ecmd->argv);
+   // printf(2, "exec %s failed\n", ecmd->argv[0]);
+	}
+	else if (cmd->type == REDIR)
+	{
     rcmd = (struct redircmd*)cmd;
-    close(rcmd->fd);
-    if(open(rcmd->file, rcmd->mode) < 0){
+    printf("close(fd=%d);\n",rcmd->fd);
+    printf("open(%s, mode=%d);\n", rcmd->file, rcmd->mode);
+		/*
+    if (open(rcmd->file, rcmd->mode) < 0)
+		{
       printf(2, "open %s failed\n", rcmd->file);
-      exit();
+      exit (1);
     }
-    runcmd(rcmd->cmd);
-    break;
-
-  case LIST:
+		*/
+    runcmd_test(rcmd->cmd);
+	}
+	else if (cmd->type == LIST)
+	{
     lcmd = (struct listcmd*)cmd;
     if(fork1() == 0)
-      runcmd(lcmd->left);
-    wait();
-    runcmd(lcmd->right);
-    break;
-
-  case PIPE:
+      runcmd_test(lcmd->left);
+    wait(NULL);
+    runcmd_test(lcmd->right);
+	}
+	else if (cmd->type == PIPE)
+	{
     pcmd = (struct pipecmd*)cmd;
-    if(pipe(p) < 0)
-      panic("pipe");
-    if(fork1() == 0){
-      close(1);
-      dup(p[1]);
-      close(p[0]);
-      close(p[1]);
-      runcmd(pcmd->left);
+  //  if (pipe(p) < 0)
+    //  panic("pipe");
+		printf("make pipe\n");
+    if (fork1() == 0){
+//      close(1);
+  //    dup(p[1]);
+    //  close(p[0]);
+    //  close(p[1]);
+      runcmd_test(pcmd->left);
     }
-    if(fork1() == 0){
-      close(0);
-      dup(p[0]);
-      close(p[0]);
-      close(p[1]);
-      runcmd(pcmd->right);
+  	wait(NULL);
+    if (fork1() == 0){
+//      close(0);
+  //    dup(p[0]);
+    //  close(p[0]);
+      //close(p[1]);
+      runcmd_test(pcmd->right);
     }
-    close(p[0]);
-    close(p[1]);
-    wait();
-    wait();
-    break;
-
-  case BACK:
+//    close(p[0]);
+  //  close(p[1]);
+    wait(NULL);
+  }
+	else if (cmd->type == BACK)
+	{
     bcmd = (struct backcmd*)cmd;
     if(fork1() == 0)
-      runcmd(bcmd->cmd);
-    break;
+      runcmd_test(bcmd->cmd);
   }
-  exit();
+	else
+		panic("runcmd");
+  exit (0);
 }
 
+/*
 int	getcmd(char *buf, int nbuf)
 {
 	printf(2, "$ ");
@@ -499,6 +506,6 @@ struct cmd	*nulterminate(struct cmd *cmd)
 
 int	main(int argc, char *argv[])
 {
-	parsecmd(argv[1]);
+	runcmd_test(parsecmd(argv[1]));
 	return (0);
 }
