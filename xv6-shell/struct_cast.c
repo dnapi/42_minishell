@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <limits.h>
+
+#define STR "abcde"
 
 typedef struct s_cmd_pipe
 {
@@ -29,6 +32,13 @@ int	main(void)
 	printf("type=%d\n", pcmd->type);
 	ppipe2 = (p_cmd_pipe *)pcmd;
 	printf("type=%c\n", ppipe2->c);
+
+	char s[10] = "a\"c";
+	printf("s=%s\n", strchr(STR,'b'));
+	printf("s=%s\n", strchr(s,'\"'));
+	printf("s=->%s<-\n", strchr("",0));
+	if (strchr("",0))
+		printf("true\n");
 //xargs --show-limits
 	//getconf ARG_MAX
 //	printf("ARG_MAX=%d\n",ARG_MAX);
