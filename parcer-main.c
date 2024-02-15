@@ -15,16 +15,29 @@
 #define ARG_MAX 4
 
 
-//#include "types.h"
-//#include "user.h"
-//#include "fcntl.h"
-
 // Parsed command representation
 #define EXEC  1
 #define REDIR 2
 #define PIPE  3
 #define LIST  4
 #define BACK  5
+#define AND_CMD 6
+#define OR_CMD 7
+
+
+typedef enum e_token
+{
+	WORD,
+	RED_IN,
+	HEREDOC,
+	RED_OUT,
+	RED_OUT_APP,
+	PIPE_TOK,
+	OR_TOK,
+	AND_TOK,
+	LPAR,
+	RPAR
+}	t_token_type;
 
 // #define MAXARGS 10 redifined in ARG_MAX
 
@@ -33,38 +46,42 @@ typedef struct s_cmd
   int type;
 } t_cmd;
 
-struct execcmd 
+typedef struct s_execcmd
 {
   int type;
   char *argv[ARG_MAX];
   char *eargv[ARG_MAX];
-};
+}	t_execcmd;
 
-struct redircmd {
+typedef struct s_redircmd
+{
   int type;
   t_cmd *cmd;
   char *file;
   char *efile;
   int mode;
   int fd;
-};
+}	t_redircmd;
 
-struct pipecmd {
+typedef struct s_pipecmd
+{
   int type;
   t_cmd *left;
   t_cmd *right;
-};
+}	t_pipecmd;
 
-struct listcmd {
+typedef struct s_listcmd
+{
   int type;
   t_cmd *left;
   t_cmd *right;
-};
+} t_listcmd;
 
-struct backcmd {
+typedef struct s_backcmd
+{
   int type;
   t_cmd *cmd;
-};
+}	t_backcmd;
 
 int fork1(void);  // Fork but panics on failure.
 void panic(char*);
@@ -78,17 +95,17 @@ t_cmd *parsecmd(char*);
 void runcmd_test(t_cmd *cmd)
 {
   int p[2];
-  struct backcmd *bcmd;
-  struct execcmd *ecmd;
-  struct listcmd *lcmd;
-  struct pipecmd *pcmd;
-  struct redircmd *rcmd;
+  t_backcmd *bcmd;
+  t_execcmd *ecmd;
+  t_listcmd *lcmd;
+  t_pipecmd *pcmd;
+  t_redircmd *rcmd;
 
 	if(cmd == 0)
     exit(1);
 	else if (cmd->type == EXEC)
 	{
-    ecmd = (struct execcmd*)cmd;
+    ecmd = (t_execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit (1);
 		printf("argv=%s, %s, %s, %s\n", ecmd->argv[0], ecmd->argv[1], ecmd->argv[2], ecmd->argv[3]);
@@ -97,7 +114,7 @@ void runcmd_test(t_cmd *cmd)
 	}
 	else if (cmd->type == REDIR)
 	{
-    rcmd = (struct redircmd*)cmd;
+    rcmd = (t_redircmd*)cmd;
     printf("close(fd=%d);\n",rcmd->fd);
     printf("open(%s, mode=%d);\n", rcmd->file, rcmd->mode);
 		/*
@@ -111,7 +128,7 @@ void runcmd_test(t_cmd *cmd)
 	}
 	else if (cmd->type == LIST)
 	{
-    lcmd = (struct listcmd*)cmd;
+    lcmd = (t_listcmd*)cmd;
     if(fork1() == 0)
       runcmd_test(lcmd->left);
     wait(NULL);
@@ -119,7 +136,7 @@ void runcmd_test(t_cmd *cmd)
 	}
 	else if (cmd->type == PIPE)
 	{
-    pcmd = (struct pipecmd*)cmd;
+    pcmd = (t_pipecmd*)cmd;
   //  if (pipe(p) < 0)
     //  panic("pipe");
 		printf("make pipe\n");
@@ -144,7 +161,7 @@ void runcmd_test(t_cmd *cmd)
   }
 	else if (cmd->type == BACK)
 	{
-    bcmd = (struct backcmd*)cmd;
+    bcmd = (t_backcmd*)cmd;
     if(fork1() == 0)
       runcmd_test(bcmd->cmd);
 		wait(NULL);
@@ -220,7 +237,7 @@ int fork1(void)
 
 t_cmd	*execcmd(void)
 {
-  struct execcmd *cmd;
+  t_execcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
@@ -230,7 +247,7 @@ t_cmd	*execcmd(void)
 
 t_cmd* redircmd(t_cmd *subcmd, char *file, char *efile, int mode, int fd)
 {
-  struct redircmd *cmd;
+  t_redircmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
@@ -245,7 +262,7 @@ t_cmd* redircmd(t_cmd *subcmd, char *file, char *efile, int mode, int fd)
 
 t_cmd* pipecmd(t_cmd *left, t_cmd *right)
 {
-  struct pipecmd *cmd;
+  t_pipecmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
@@ -257,7 +274,7 @@ t_cmd* pipecmd(t_cmd *left, t_cmd *right)
 
 t_cmd	*listcmd(t_cmd *left, t_cmd *right)
 {
-  struct listcmd *cmd;
+  t_listcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
@@ -269,7 +286,7 @@ t_cmd	*listcmd(t_cmd *left, t_cmd *right)
 
 t_cmd	*backcmd(t_cmd *subcmd)
 {
-  struct backcmd *cmd;
+  t_backcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
@@ -424,9 +441,9 @@ t_cmd	*parseblock(char **ps, char *es)
 
 void	attach_to_node(t_cmd *node, t_cmd *new)
 {
-	struct redircmd *rnode;
+	t_redircmd *rnode;
 	
-	rnode = (struct redircmd *)node;
+	rnode = (t_redircmd *)node;
 	rnode->cmd = new;
 }
 
@@ -436,7 +453,7 @@ t_cmd*	parseexec(char **ps, char *es)
 	char	*eq;
   int		tok;
 	int		argc;
-  struct execcmd *cmd;
+  t_execcmd *cmd;
   t_cmd *ret;
   t_cmd *last_node;
   t_cmd *temp;
@@ -444,7 +461,7 @@ t_cmd*	parseexec(char **ps, char *es)
 	if (peek(ps, es, "("))
 		return (parseblock(ps, es));
 	ret = execcmd();
-	cmd = (struct execcmd*)ret;
+	cmd = (t_execcmd*)ret;
 
   argc = 0;
   ret = parseredirs(ret, ps, es);
@@ -479,20 +496,20 @@ t_cmd*	parseexec(char **ps, char *es)
 
 
 /*
-
+//this is the version with reverse version of redirection nodes
 t_cmd*	parseexec(char **ps, char *es)
 {
   char	*q;
 	char	*eq;
   int		tok;
 	int		argc;
-  struct execcmd *cmd;
+  t_execcmd *cmd;
   t_cmd *ret;
 
   if (peek(ps, es, "("))
 		return (parseblock(ps, es));
 	ret = execcmd();
-  cmd = (struct execcmd*)ret;
+  cmd = (t_execcmd*)ret;
 
   argc = 0;
   ret = parseredirs(ret, ps, es);
@@ -520,17 +537,17 @@ t_cmd*	parseexec(char **ps, char *es)
 t_cmd	*nulterminate(t_cmd *cmd)
 {
   int i;
-  struct backcmd *bcmd;
-  struct execcmd *ecmd;
-  struct listcmd *lcmd;
-  struct pipecmd *pcmd;
-  struct redircmd *rcmd;
+  t_backcmd *bcmd;
+  t_execcmd *ecmd;
+  t_listcmd *lcmd;
+  t_pipecmd *pcmd;
+  t_redircmd *rcmd;
 
 	if(cmd == 0)
     return (NULL);
 	else if (cmd->type == EXEC)
 	{
-    ecmd = (struct execcmd*)cmd;
+    ecmd = (t_execcmd*)cmd;
 		i = 0;
 		while (ecmd->argv[i])
       *ecmd->eargv[i++] = 0;
@@ -539,25 +556,25 @@ t_cmd	*nulterminate(t_cmd *cmd)
 	}
 	else if (cmd->type == REDIR)
 	{
-    rcmd = (struct redircmd*)cmd;
+    rcmd = (t_redircmd*)cmd;
     nulterminate(rcmd->cmd);
     *rcmd->efile = 0;
 	}
 	else if (cmd->type == PIPE)
 	{
-    pcmd = (struct pipecmd*)cmd;
+    pcmd = (t_pipecmd*)cmd;
     nulterminate(pcmd->left);
     nulterminate(pcmd->right);
 	}
 	else if (cmd->type == LIST)
 	{
-    lcmd = (struct listcmd*)cmd;
+    lcmd = (t_listcmd*)cmd;
     nulterminate(lcmd->left);
     nulterminate(lcmd->right);
 	}
 	else if (cmd->type == BACK)
 	{
-    bcmd = (struct backcmd*)cmd;
+    bcmd = (t_backcmd*)cmd;
     nulterminate(bcmd->cmd);
   }
   return (cmd);
