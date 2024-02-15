@@ -28,10 +28,10 @@
 
 // #define MAXARGS 10 redifined in ARG_MAX
 
-struct cmd 
+typedef struct s_cmd 
 {
   int type;
-};
+} t_cmd;
 
 struct execcmd 
 {
@@ -42,7 +42,7 @@ struct execcmd
 
 struct redircmd {
   int type;
-  struct cmd *cmd;
+  t_cmd *cmd;
   char *file;
   char *efile;
   int mode;
@@ -51,31 +51,31 @@ struct redircmd {
 
 struct pipecmd {
   int type;
-  struct cmd *left;
-  struct cmd *right;
+  t_cmd *left;
+  t_cmd *right;
 };
 
 struct listcmd {
   int type;
-  struct cmd *left;
-  struct cmd *right;
+  t_cmd *left;
+  t_cmd *right;
 };
 
 struct backcmd {
   int type;
-  struct cmd *cmd;
+  t_cmd *cmd;
 };
 
 int fork1(void);  // Fork but panics on failure.
 void panic(char*);
-struct cmd *parsecmd(char*);
+t_cmd *parsecmd(char*);
 
 
-// Execute cmd.  Never returns. 
+// Execute s_cmd.  Never returns. 
 // test version for testing AST
 // 
 
-void runcmd_test(struct cmd *cmd)
+void runcmd_test(t_cmd *cmd)
 {
   int p[2];
   struct backcmd *bcmd;
@@ -147,6 +147,7 @@ void runcmd_test(struct cmd *cmd)
     bcmd = (struct backcmd*)cmd;
     if(fork1() == 0)
       runcmd_test(bcmd->cmd);
+		wait(NULL);
   }
 	else
 		panic("runcmd");
@@ -217,17 +218,17 @@ int fork1(void)
 //PAGEBREAK!
 // Constructors
 
-struct cmd	*execcmd(void)
+t_cmd	*execcmd(void)
 {
   struct execcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
   cmd->type = EXEC;
-  return ((struct cmd*)cmd);
+  return ((t_cmd*)cmd);
 }
 
-struct cmd* redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd)
+t_cmd* redircmd(t_cmd *subcmd, char *file, char *efile, int mode, int fd)
 {
   struct redircmd *cmd;
 
@@ -239,10 +240,10 @@ struct cmd* redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int 
   cmd->efile = efile;
   cmd->mode = mode;
   cmd->fd = fd;
-  return ((struct cmd*)cmd);
+  return ((t_cmd*)cmd);
 }
 
-struct cmd* pipecmd(struct cmd *left, struct cmd *right)
+t_cmd* pipecmd(t_cmd *left, t_cmd *right)
 {
   struct pipecmd *cmd;
 
@@ -251,10 +252,10 @@ struct cmd* pipecmd(struct cmd *left, struct cmd *right)
   cmd->type = PIPE;
   cmd->left = left;
   cmd->right = right;
-  return (struct cmd*)cmd;
+  return (t_cmd*)cmd;
 }
 
-struct cmd	*listcmd(struct cmd *left, struct cmd *right)
+t_cmd	*listcmd(t_cmd *left, t_cmd *right)
 {
   struct listcmd *cmd;
 
@@ -263,10 +264,10 @@ struct cmd	*listcmd(struct cmd *left, struct cmd *right)
   cmd->type = LIST;
   cmd->left = left;
   cmd->right = right;
-  return ((struct cmd*)cmd);
+  return ((t_cmd*)cmd);
 }
 
-struct cmd	*backcmd(struct cmd *subcmd)
+t_cmd	*backcmd(t_cmd *subcmd)
 {
   struct backcmd *cmd;
 
@@ -274,7 +275,7 @@ struct cmd	*backcmd(struct cmd *subcmd)
   ft_memset(cmd, 0, sizeof(*cmd));
   cmd->type = BACK;
   cmd->cmd = subcmd;
-  return ((struct cmd*)cmd);
+  return ((t_cmd*)cmd);
 }
 
 //PAGEBREAK!
@@ -329,15 +330,15 @@ int	peek(char **ps, char *es, char *toks)
   return (*s && ft_strchr(toks, *s));
 }
 
-struct cmd	*parseline(char**, char*);
-struct cmd	*parsepipe(char**, char*);
-struct cmd	*parseexec(char**, char*);
-struct cmd	*nulterminate(struct cmd*);
+t_cmd	*parseline(char**, char*);
+t_cmd	*parsepipe(char**, char*);
+t_cmd	*parseexec(char**, char*);
+t_cmd	*nulterminate(t_cmd*);
 
-struct cmd	*parsecmd(char *s)
+t_cmd	*parsecmd(char *s)
 {
   char		*es;
-  struct cmd	*cmd;
+  t_cmd	*cmd;
 
   es = s + ft_strlen(s);
   cmd = parseline(&s, es);
@@ -353,9 +354,9 @@ struct cmd	*parsecmd(char *s)
   return (cmd);
 }
 
-struct cmd	*parseline(char **ps, char *es)
+t_cmd	*parseline(char **ps, char *es)
 {
-  struct cmd *cmd;
+  t_cmd *cmd;
 
   cmd = parsepipe(ps, es);
   while (peek(ps, es, "&"))
@@ -371,9 +372,9 @@ struct cmd	*parseline(char **ps, char *es)
   return (cmd);
 }
 
-struct cmd*	parsepipe(char **ps, char *es)
+t_cmd*	parsepipe(char **ps, char *es)
 {
-  struct cmd *cmd;
+  t_cmd *cmd;
 
   cmd = parseexec(ps, es);
   if(peek(ps, es, "|"))
@@ -384,7 +385,7 @@ struct cmd*	parsepipe(char **ps, char *es)
   return (cmd);
 }
 
-struct cmd*	parseredirs(struct cmd *cmd, char **ps, char *es)
+t_cmd*	parseredirs(t_cmd *cmd, char **ps, char *es)
 {
   int tok;
   char *q, *eq;
@@ -406,9 +407,9 @@ struct cmd*	parseredirs(struct cmd *cmd, char **ps, char *es)
   return (cmd);
 }
 
-struct cmd	*parseblock(char **ps, char *es)
+t_cmd	*parseblock(char **ps, char *es)
 {
-  struct cmd *cmd;
+  t_cmd *cmd;
 
   if (!peek(ps, es, "("))
     panic("parseblock");
@@ -421,14 +422,72 @@ struct cmd	*parseblock(char **ps, char *es)
   return (cmd);
 }
 
-struct cmd*	parseexec(char **ps, char *es)
+void	attach_to_node(t_cmd *node, t_cmd *new)
+{
+	struct redircmd *rnode;
+	
+	rnode = (struct redircmd *)node;
+	rnode->cmd = new;
+}
+
+t_cmd*	parseexec(char **ps, char *es)
 {
   char	*q;
 	char	*eq;
   int		tok;
 	int		argc;
   struct execcmd *cmd;
-  struct cmd *ret;
+  t_cmd *ret;
+  t_cmd *last_node;
+  t_cmd *temp;
+
+	if (peek(ps, es, "("))
+		return (parseblock(ps, es));
+	ret = execcmd();
+	cmd = (struct execcmd*)ret;
+
+  argc = 0;
+  ret = parseredirs(ret, ps, es);
+	last_node = ret;
+  while(!peek(ps, es, "|)&;"))
+	{
+    tok = gettoken(ps, es, &q, &eq);
+    if (tok == 0)
+      break;
+    if (tok != 'a')
+      panic("syntax");
+    cmd->argv[argc] = q;
+    cmd->eargv[argc] = eq;
+    argc++;
+    if (argc >= ARG_MAX)
+      panic("too many args");
+    temp = parseredirs((t_cmd *)cmd, ps, es);
+		if (temp != (t_cmd *)cmd)
+		{
+			// attach temp to last_node
+			if (last_node != (t_cmd *)cmd)
+				attach_to_node(last_node, temp);
+			else
+				ret = temp;
+			last_node = temp;
+		}
+  }
+  cmd->argv[argc] = 0;
+  cmd->eargv[argc] = 0;
+  return (ret);
+}
+
+
+/*
+
+t_cmd*	parseexec(char **ps, char *es)
+{
+  char	*q;
+	char	*eq;
+  int		tok;
+	int		argc;
+  struct execcmd *cmd;
+  t_cmd *ret;
 
   if (peek(ps, es, "("))
 		return (parseblock(ps, es));
@@ -455,9 +514,10 @@ struct cmd*	parseexec(char **ps, char *es)
   cmd->eargv[argc] = 0;
   return (ret);
 }
+	*/
 
 // NUL-terminate all the counted strings.
-struct cmd	*nulterminate(struct cmd *cmd)
+t_cmd	*nulterminate(t_cmd *cmd)
 {
   int i;
   struct backcmd *bcmd;
