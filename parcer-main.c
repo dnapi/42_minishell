@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <linux/limits.h>
 #include "libft/libft.h"
+#include "minishell.h"
 
 #define WHITESPACE " \t\r\n\v"
 //#define SYMBOLS  "<>|&()\"\'"
@@ -40,7 +41,7 @@ typedef enum e_token
 }	t_token_type;
 
 // #define MAXARGS 10 redifined in ARG_MAX
-
+/*
 typedef struct s_cmd 
 {
   int type;
@@ -83,8 +84,11 @@ typedef struct s_backcmd
   t_cmd *cmd;
 }	t_backcmd;
 
-int fork1(void);  // Fork but panics on failure.
-void panic(char*);
+*/
+
+
+int fork1_test(void);  // Fork but panics on failure.
+void panic_test(char*);
 t_cmd *parsecmd(char*);
 
 
@@ -102,7 +106,10 @@ void runcmd_test(t_cmd *cmd)
   t_redircmd *rcmd;
 
 	if(cmd == 0)
+	{
+		printf("NULL Node\n");
     exit(1);
+	}
 	else if (cmd->type == EXEC)
 	{
     ecmd = (t_execcmd*)cmd;
@@ -129,7 +136,7 @@ void runcmd_test(t_cmd *cmd)
 	else if (cmd->type == LIST)
 	{
     lcmd = (t_listcmd*)cmd;
-    if(fork1() == 0)
+    if(fork1_test() == 0)
       runcmd_test(lcmd->left);
     wait(NULL);
     runcmd_test(lcmd->right);
@@ -138,9 +145,9 @@ void runcmd_test(t_cmd *cmd)
 	{
     pcmd = (t_pipecmd*)cmd;
   //  if (pipe(p) < 0)
-    //  panic("pipe");
+    //  panic_test("pipe");
 		printf("make pipe\n");
-    if (fork1() == 0){
+    if (fork1_test() == 0){
 //      close(1);
   //    dup(p[1]);
     //  close(p[0]);
@@ -148,7 +155,7 @@ void runcmd_test(t_cmd *cmd)
       runcmd_test(pcmd->left);
     }
   	wait(NULL);
-    if (fork1() == 0){
+    if (fork1_test() == 0){
 //      close(0);
   //    dup(p[0]);
     //  close(p[0]);
@@ -162,12 +169,12 @@ void runcmd_test(t_cmd *cmd)
 	else if (cmd->type == BACK)
 	{
     bcmd = (t_backcmd*)cmd;
-    if(fork1() == 0)
+    if(fork1_test() == 0)
       runcmd_test(bcmd->cmd);
 		wait(NULL);
   }
 	else
-		panic("runcmd");
+		panic_test("runcmd");
   exit (0);
 }
 
@@ -205,7 +212,7 @@ main(void)
         printf(2, "cannot cd %s\n", buf+3);
       continue;
     }
-    if(fork1() == 0)
+    if(fork1_test() == 0)
       runcmd(parsecmd(buf));
     wait();
   }
@@ -214,7 +221,7 @@ main(void)
 
 */
 
-void	panic(char *s)
+void	panic_test(char *s)
 {
 //  printf(2, "%s\n", s);
 	ft_putstr_fd(s, 2);
@@ -222,13 +229,13 @@ void	panic(char *s)
   exit(1);
 }
 
-int fork1(void)
+int fork1_test(void)
 {
   int pid;
 
   pid = fork();
   if(pid == -1)
-    panic("fork");
+    panic_test("fork");
   return pid;
 }
 
@@ -365,7 +372,7 @@ t_cmd	*parsecmd(char *s)
     ft_putstr_fd("leftovers", 2);
 		ft_putstr_fd(s, 2);
 		ft_putstr_fd("\n", 2);
-    panic("syntax");
+    panic_test("syntax");
   }
   nulterminate(cmd);
   return (cmd);
@@ -411,7 +418,7 @@ t_cmd*	parseredirs(t_cmd *cmd, char **ps, char *es)
 	{
     tok = gettoken(ps, es, 0, 0);
     if (gettoken(ps, es, &q, &eq) != 'a')
-      panic("missing file for redirection");
+      panic_test("missing file for redirection");
 		if (tok == '<')
       cmd = redircmd(cmd, q, eq, O_RDONLY, 0);
 		else if (tok == '>')
@@ -429,11 +436,11 @@ t_cmd	*parseblock(char **ps, char *es)
   t_cmd *cmd;
 
   if (!peek(ps, es, "("))
-    panic("parseblock");
+    panic_test("parseblock");
   gettoken(ps, es, 0, 0);
   cmd = parseline(ps, es);
   if (!peek(ps, es, ")"))
-    panic("syntax - missing )");
+    panic_test("syntax - missing )");
   gettoken(ps, es, 0, 0);
   cmd = parseredirs(cmd, ps, es);
   return (cmd);
@@ -472,12 +479,12 @@ t_cmd*	parseexec(char **ps, char *es)
     if (tok == 0)
       break;
     if (tok != 'a')
-      panic("syntax");
+      panic_test("syntax");
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
     argc++;
     if (argc >= ARG_MAX)
-      panic("too many args");
+      panic_test("too many args");
     temp = parseredirs((t_cmd *)cmd, ps, es);
 		if (temp != (t_cmd *)cmd)
 		{
@@ -519,12 +526,12 @@ t_cmd*	parseexec(char **ps, char *es)
     if (tok == 0)
       break;
     if (tok != 'a')
-      panic("syntax");
+      panic_test("syntax");
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
     argc++;
     if (argc >= ARG_MAX)
-      panic("too many args");
+      panic_test("too many args");
     ret = parseredirs(ret, ps, es);
   }
   cmd->argv[argc] = 0;
@@ -579,10 +586,87 @@ t_cmd	*nulterminate(t_cmd *cmd)
   }
   return (cmd);
 }
-
-
-int	main(int argc, char *argv[])
+void	print_error(char *err_msg)
 {
-	runcmd_test(parsecmd(argv[1]));
+	if (ft_putstr_fd("minishell: ", STDERR_FILENO) == -1)
+	{
+		perror("minishell: write error");
+		exit(EXIT_FAILURE);
+	}
+	perror(err_msg);
+	exit(EXIT_FAILURE);
+}
+
+void	validate_args(int argc)
+{
+	if (argc != 1)
+	{
+		if (ft_putendl_fd(ERR_ARGS, STDERR_FILENO) == -1)
+			print_error(ERR_WRITE);
+		if (ft_putendl_fd(USAGE, STDOUT_FILENO) == -1)
+			print_error(ERR_WRITE);
+		exit(EXIT_FAILURE);
+	}
+}
+
+int	arr_len(char **arr)
+{
+	int	len;
+
+	len = 0;
+	while (arr[len] != NULL)
+		len++;
+	return (len);
+}
+
+void	free_arr(char **arr, int curr_index)
+{
+	int	i;
+
+	i = -1;
+	while (++i <= curr_index)
+		free(arr[i]);
+	free(arr);
+	arr = NULL;
+}
+
+char	**copy_env(char **envp)
+{
+	int		len;
+	char	**envs;
+	int		i;
+	int		j;
+
+	len = arr_len(envp);
+	envs = (char **)malloc(sizeof(char *) * (len + 1));
+	if (envs == NULL)
+		print_error(ERR_MALLOC);
+	i = -1;
+	while (++i < len)
+	{
+		envs[i] = (char *)malloc(sizeof(char) * ((int)ft_strlen(envp[i]) + 1));
+		if (envs[i] == NULL)
+		{
+			free_arr(envs, i);
+			print_error(ERR_MALLOC);
+		}
+		j = -1;
+		while (++j < (int)ft_strlen(envp[i]))
+			envs[i][j] = envp[i][j];
+		envs[i][j] = '\0';
+	}
+	envs[i] = NULL;
+	return (envs);
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+	t_data	data;
+
+	(void)argv;
+	data.envs = copy_env(envp); // free data.envs before exit
+	//runcmd_test(parsecmd(argv[1]));
+	runcmd(parsecmd(argv[1]), &data);
+	
 	return (0);
 }
