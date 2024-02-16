@@ -31,7 +31,7 @@ int	main(void)
 	printf("type=%c\n", ppipe2->c);
 //xargs --show-limits
 	//getconf ARG_MAX
-//	printf("ARG_MAX=%d\n",ARG_MAX);
+	printf("ARG_MAX=%d\n",ARG_MAX);
 //	printf("ARG_MAX=%d\n",MAX_ARGS);
 //	printf("ARG_MAX=%d\n",MAX_PARAMETERS);
 

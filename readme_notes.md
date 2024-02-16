@@ -104,3 +104,9 @@ git push --set-upstream origin branch_name
   - `\uHHHH`: Unicode character of hexadecimal value HHHH.
   - `\NNN`: 8-bit character with octal value NNN.
 
+
+## Links & Refs.
+
+https://m4nnb3ll.medium.com/minishell-building-a-mini-bash-a-42-project-b55a10598218
+https://dev.to/oyagci/generating-a-parse-tree-from-a-shell-grammar-f1
+
