@@ -16,17 +16,6 @@
 // for testing pupose let us use ARG_MAX = 3 at first
 #define ARG_MAX 4
 
-
-// Parsed command representation
-#define EXEC  1
-#define REDIR 2
-#define PIPE  3
-#define LIST  4
-#define BACK  5
-#define AND_CMD 6
-#define OR_CMD 7
-
-
 int fork1_test(void);  // Fork but panics on failure.
 void panic_test(char*);
 t_cmd *parsecmd(char*);
