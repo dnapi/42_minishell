@@ -51,15 +51,18 @@ void	runcmd(t_cmd *cmd, t_data *data)
 		// expansion
 		execve(ecmd->argv[0], ecmd->argv, data->envp);
 		panic(ecmd->argv[0], data, EXIT_CMD_NOT_FOUND);
-	}/*
+	}
 	else if (cmd->type == REDIR)
 	{
 		rcmd = (t_redircmd *)cmd;
 		close(rcmd->fd);
-		if (open(rcmd->file, rcmd->mode) < 0)
-			panic(rcmd->file, data, EXIT_FAILURE);
-		runcmd(rcmd->cmd);
-	}*/
+	//	fd = open(rcmd->file, rcmd->mode)
+	//	if (fd < 0)
+		if (open(rcmd->file, rcmd->mode, data) < 0)
+			panic(rcmd->file, data, EXIT_FAILURE); // replace by perror?
+//		dub2(fd, rcmd->fd); no need for that as fd will be rcmd->fd as it is closed. 
+		runcmd(rcmd->cmd, data);
+	}
 	else if (cmd->type == LIST) // &&, ||, exit code to be considered
 	{
 		lcmd = (t_listcmd *)cmd;
