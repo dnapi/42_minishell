@@ -12,6 +12,7 @@
 //#ifndef ARG_MAX
 //# define ARG_MAX 100
 //#endif
+// #define MAXARGS 10 redifined in ARG_MAX
 // for testing pupose let us use ARG_MAX = 3 at first
 #define ARG_MAX 4
 
@@ -26,76 +27,11 @@
 #define OR_CMD 7
 
 
-typedef enum e_token
-{
-	WORD,
-	RED_IN,
-	HEREDOC,
-	RED_OUT,
-	RED_OUT_APP,
-	PIPE_TOK,
-	OR_TOK,
-	AND_TOK,
-	LPAR,
-	RPAR
-}	t_token_type;
-
-// #define MAXARGS 10 redifined in ARG_MAX
-/*
-typedef struct s_cmd 
-{
-  int type;
-} t_cmd;
-
-typedef struct s_execcmd
-{
-  int type;
-  char *argv[ARG_MAX];
-  char *eargv[ARG_MAX];
-}	t_execcmd;
-
-typedef struct s_redircmd
-{
-  int type;
-  t_cmd *cmd;
-  char *file;
-  char *efile;
-  int mode;
-  int fd;
-}	t_redircmd;
-
-typedef struct s_pipecmd
-{
-  int type;
-  t_cmd *left;
-  t_cmd *right;
-}	t_pipecmd;
-
-typedef struct s_listcmd
-{
-  int type;
-  t_cmd *left;
-  t_cmd *right;
-} t_listcmd;
-
-typedef struct s_backcmd
-{
-  int type;
-  t_cmd *cmd;
-}	t_backcmd;
-
-*/
-
-
 int fork1_test(void);  // Fork but panics on failure.
 void panic_test(char*);
 t_cmd *parsecmd(char*);
 
-
-// Execute s_cmd.  Never returns. 
-// test version for testing AST
-// 
-
+// test version of runcmd for testing AST
 void runcmd_test(t_cmd *cmd)
 {
   int p[2];
@@ -178,49 +114,6 @@ void runcmd_test(t_cmd *cmd)
   exit (0);
 }
 
-/*
-int	getcmd(char *buf, int nbuf)
-{
-	printf(2, "$ ");
-  memset(buf, 0, nbuf);
-  gets(buf, nbuf);
-  if(buf[0] == 0) // EOF
-    return -1;
-  return 0;
-}
-
-int
-main(void)
-{
-  static char buf[100];
-  int fd;
-
-  // Ensure that three file descriptors are open.
-  while((fd = open("console", O_RDWR)) >= 0){
-    if(fd >= 3){
-      close(fd);
-      break;
-    }
-  }
-
-  // Read and run input commands.
-  while(getcmd(buf, sizeof(buf)) >= 0){
-    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
-      // Chdir must be called by the parent, not the child.
-      buf[strlen(buf)-1] = 0;  // chop \n
-      if(chdir(buf+3) < 0)
-        printf(2, "cannot cd %s\n", buf+3);
-      continue;
-    }
-    if(fork1_test() == 0)
-      runcmd(parsecmd(buf));
-    wait();
-  }
-  exit();
-}
-
-*/
-
 void	panic_test(char *s)
 {
 //  printf(2, "%s\n", s);
@@ -239,7 +132,6 @@ int fork1_test(void)
   return pid;
 }
 
-//PAGEBREAK!
 // Constructors
 
 t_cmd	*execcmd(void)
@@ -302,7 +194,6 @@ t_cmd	*backcmd(t_cmd *subcmd)
   return ((t_cmd*)cmd);
 }
 
-//PAGEBREAK!
 // Parsing
 
 int	gettoken(char **ps, char *es, char **q, char **eq)
@@ -500,45 +391,6 @@ t_cmd*	parseexec(char **ps, char *es)
   cmd->eargv[argc] = 0;
   return (ret);
 }
-
-
-/*
-//this is the version with reverse version of redirection nodes
-t_cmd*	parseexec(char **ps, char *es)
-{
-  char	*q;
-	char	*eq;
-  int		tok;
-	int		argc;
-  t_execcmd *cmd;
-  t_cmd *ret;
-
-  if (peek(ps, es, "("))
-		return (parseblock(ps, es));
-	ret = execcmd();
-  cmd = (t_execcmd*)ret;
-
-  argc = 0;
-  ret = parseredirs(ret, ps, es);
-  while(!peek(ps, es, "|)&;"))
-	{
-    tok = gettoken(ps, es, &q, &eq);
-    if (tok == 0)
-      break;
-    if (tok != 'a')
-      panic_test("syntax");
-    cmd->argv[argc] = q;
-    cmd->eargv[argc] = eq;
-    argc++;
-    if (argc >= ARG_MAX)
-      panic_test("too many args");
-    ret = parseredirs(ret, ps, es);
-  }
-  cmd->argv[argc] = 0;
-  cmd->eargv[argc] = 0;
-  return (ret);
-}
-	*/
 
 // NUL-terminate all the counted strings.
 t_cmd	*nulterminate(t_cmd *cmd)
