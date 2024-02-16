@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/wait.h>
-#include <linux/limits.h>
+//#include <linux/limits.h>
 #include "libft/libft.h"
 #include "minishell.h"
 
@@ -664,7 +664,7 @@ int	main(int argc, char **argv, char **envp)
 	t_data	data;
 
 	(void)argv;
-	data.envs = copy_env(envp); // free data.envs before exit
+	data.envp = copy_env(envp); // free data.envs before exit
 	//runcmd_test(parsecmd(argv[1]));
 	runcmd(parsecmd(argv[1]), &data);
 	

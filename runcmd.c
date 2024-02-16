@@ -51,7 +51,7 @@ void	runcmd(t_cmd *cmd, t_data *data)
 		// expansion
 		execve(ecmd->argv[0], ecmd->argv, data->envp);
 		panic(ecmd->argv[0], data, EXIT_CMD_NOT_FOUND);
-	}
+	}/*
 	else if (cmd->type == REDIR)
 	{
 		rcmd = (t_redircmd *)cmd;
@@ -59,14 +59,14 @@ void	runcmd(t_cmd *cmd, t_data *data)
 		if (open(rcmd->file, rcmd->mode) < 0)
 			panic(rcmd->file, data, EXIT_FAILURE);
 		runcmd(rcmd->cmd);
-	}
+	}*/
 	else if (cmd->type == LIST) // &&, ||, exit code to be considered
 	{
 		lcmd = (t_listcmd *)cmd;
 		if (fork1(data) == 0)
-			runcmd(lcmd->left);
+			runcmd(lcmd->left, data);
 		wait(NULL);
-		runcmd(lcmd->right);
+		runcmd(lcmd->right, data);
 	}
 	else if (cmd->type == PIPE)
 	{
@@ -80,7 +80,7 @@ void	runcmd(t_cmd *cmd, t_data *data)
 			dup(pipe_fd[1]);
 			close(pipe_fd[0]);
 			close(pipe_fd[1]);
-			runcmd(pcmd->left);
+			runcmd(pcmd->left, data);
 		}
 		pid2 = fork1(data);
 		if (pid2 == 0)
@@ -89,7 +89,7 @@ void	runcmd(t_cmd *cmd, t_data *data)
 			dup(pipe_fd[0]);
 			close(pipe_fd[0]);
 			close(pipe_fd[1]);
-			runcmd(pcmd->right);
+			runcmd(pcmd->right, data);
 		}
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
