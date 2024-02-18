@@ -1,4 +1,5 @@
 #include "minishell.h"
+#include <stdio.h>
 
 void	panic(char *err_msg, t_data *data, int exit_code);
 
@@ -63,8 +64,47 @@ void	runcmd(t_cmd *cmd, t_data *data)
 //		dub2(fd, rcmd->fd); no need for that as fd will be rcmd->fd as it is closed. 
 		runcmd(rcmd->cmd, data);
 	}
+	else if (cmd->type == AND_CMD)
+	{
+		lcmd = (t_listcmd *)cmd;
+		//remove fork use data instead  to pass error status
+		//make int type of runcmd to return status;
+		pid1 = fork1(data);
+		if (pid1 == 0)
+			runcmd(lcmd->left, data);
+		if (waitpid(pid1, &status, 0) == -1)
+			panic(ERR_WAITPID, data, EXIT_FAILURE);
+		if (status == 0)
+			runcmd(lcmd->right, data);
+		else
+		{
+			//remove dprintf
+			dprintf(2, "&&: status error of left cmd=%d\n", status);
+//			perror()
+		}
+	}
+	else if (cmd->type == OR_CMD)
+	{
+		lcmd = (t_listcmd *)cmd;
+		//remove fork use data instead  to pass error status
+		//make int type of runcmd to return status;
+		pid1 = fork1(data);
+		if (pid1 == 0)
+			runcmd(lcmd->left, data);
+		if (waitpid(pid1, &status, 0) == -1)
+			panic(ERR_WAITPID, data, EXIT_FAILURE);
+		if (status != 0)
+		{
+			dprintf(2, "||: status error of left cmd=%d\n", status);
+			runcmd(lcmd->right, data);
+			//remove dprintf
+//			perror() ?
+		}
+	}
+	// remove LIST ; node 
 	else if (cmd->type == LIST) // &&, ||, exit code to be considered
 	{
+		dprintf(2, "syntax error?! remove ;-nodes\n");
 		lcmd = (t_listcmd *)cmd;
 		if (fork1(data) == 0)
 			runcmd(lcmd->left, data);

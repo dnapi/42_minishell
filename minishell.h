@@ -26,9 +26,6 @@ STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO */
 # define ERR_ARGS "invalid number of arguments"
 # define USAGE "ex. usage: ./minishell"
 
-
-#define MAXARGS 10
-
 # define ERR_MALLOC "malloc error"
 # define ERR_PIPE "pipe error"
 # define ERR_FORK "fork error"
@@ -40,10 +37,14 @@ STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO */
 #define EXEC  1
 #define REDIR 2
 #define PIPE  3
-#define LIST  4
-#define BACK  5
-#define AND_CMD 6
-#define OR_CMD 7
+#define AND_CMD 4
+#define OR_CMD 5
+
+// to be removed
+#define LIST  6
+#define BACK  7
+
+#define MAXARGS 10
 
 typedef enum e_token
 {

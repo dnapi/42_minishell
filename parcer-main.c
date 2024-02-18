@@ -14,7 +14,7 @@
 //#endif
 // #define MAXARGS 10 redifined in ARG_MAX
 // for testing pupose let us use ARG_MAX = 3 at first
-//#define ARG_MAX 
+#define ARG_MAX 3
 
 int fork1_test(void);  // Fork but panics on failure.
 void panic_test(char*);
@@ -64,6 +64,24 @@ void runcmd_test(t_cmd *cmd)
     if(fork1_test() == 0)
       runcmd_test(lcmd->left);
     wait(NULL);
+    runcmd_test(lcmd->right);
+	}
+	else if (cmd->type == AND_CMD)
+	{
+    lcmd = (t_listcmd*)cmd;
+    if(fork1_test() == 0)
+      runcmd_test(lcmd->left);
+    wait(NULL);
+		printf("&&\n");
+    runcmd_test(lcmd->right);
+	}
+	else if (cmd->type == OR_CMD)
+	{
+    lcmd = (t_listcmd*)cmd;
+    if(fork1_test() == 0)
+      runcmd_test(lcmd->left);
+    wait(NULL);
+		printf("||\n");
     runcmd_test(lcmd->right);
 	}
 	else if (cmd->type == PIPE)
@@ -172,6 +190,18 @@ t_cmd	*listcmd(t_cmd *left, t_cmd *right)
   return ((t_cmd*)cmd);
 }
 
+t_cmd	*list_cmd(t_cmd *left, t_cmd *right, int type)
+{
+  t_listcmd *cmd;
+
+  cmd = malloc(sizeof(*cmd));
+  ft_memset(cmd, 0, sizeof(*cmd));
+  cmd->type = type;
+  cmd->left = left;
+  cmd->right = right;
+  return ((t_cmd*)cmd);
+}
+
 t_cmd	*backcmd(t_cmd *subcmd)
 {
   t_backcmd *cmd;
@@ -187,6 +217,9 @@ t_cmd	*backcmd(t_cmd *subcmd)
 
 void increase_s_quotes(char **pnt_s, int *p_quotes)
 {
+//	printf("%c\n",**pnt_s);
+//	printf("q0=%d\n",p_quotes[0]);
+//	printf("q1=%d\n",p_quotes[1]);
 	if (**pnt_s == '\"' && p_quotes[1] == 0)
 		p_quotes[0] = (p_quotes[0] + 1) % 2;
 	if (**pnt_s == '\'' && p_quotes[0] == 0)
@@ -218,6 +251,16 @@ int	gettoken(char **ps, char *es, char **q, char **eq)
 			s++;
 			ret = '+';
 		}
+		if (s[0] == s[1] && s[0] == '&')
+		{
+			s++;
+			ret = AND_TOK;
+		}
+		if (s[0] == s[1] && s[0] == '|')
+		{
+			s++;
+			ret = OR_TOK;
+		}
 		s++;
 	}
 	else
@@ -225,7 +268,7 @@ int	gettoken(char **ps, char *es, char **q, char **eq)
 		ret = 'a';
 	    while (s < es && ((!ft_strchr(WHITESPACE, *s) && !ft_strchr(SYMBOLS, *s)) \
 				|| (quotes[0] || quotes[1])))
-			increase_s_quotes(&s, quotes);
+				increase_s_quotes(&s, quotes);
 	}
   if (eq)
     *eq = s;
@@ -297,21 +340,33 @@ t_cmd	*parsecmd(char *s)
 {
   char		*es;
   t_cmd	*cmd;
+	
+	if (s == NULL)
+	{
+		dprintf(2, "Error: buffer cmd = NULL\n");
+		return (NULL);
+	}
+	if (*s == '\0')
+	{
+		dprintf(2, "Error: buffer cmd is empty string\n");
+		return (NULL);
+	}
 
   es = s + ft_strlen(s);
   cmd = parseline(&s, es);
   peek(&s, es, "");
   if(s != es)
 	{
-    ft_putstr_fd("leftovers", 2);
+    ft_putstr_fd("leftovers after paesed line", 2);
 		ft_putstr_fd(s, 2);
 		ft_putstr_fd("\n", 2);
-    panic_test("syntax");
+    panic_test("syntax error after parsing line");
   }
   nulterminate(cmd);
   return (cmd);
 }
 
+/*
 t_cmd	*parseline(char **ps, char *es)
 {
   t_cmd *cmd;
@@ -329,16 +384,48 @@ t_cmd	*parseline(char **ps, char *es)
   }
   return (cmd);
 }
+*/
+
+//t_cmd	*parseline_and_or(char **ps, char *es)
+t_cmd	*parseline(char **ps, char *es)
+{
+  t_cmd *cmd_a;
+  t_cmd *cmd_b;
+	int	tok;
+
+  cmd_a = parsepipe(ps, es);
+  //while (peek(ps, es, "&|"))
+  while (1)
+	{
+    tok = gettoken(ps, es, 0, 0);
+		if (tok == AND_TOK)
+		{
+  		cmd_b = parsepipe(ps, es);
+	    cmd_a = list_cmd(cmd_a, cmd_b, AND_CMD);
+		}
+		else if (tok == OR_TOK)
+		{
+  		cmd_b = parsepipe(ps, es);
+	    cmd_a = list_cmd(cmd_a, cmd_b, OR_CMD);
+		}
+		else
+			return (cmd_a);
+  }
+  return (cmd_a);
+}
+
 
 t_cmd*	parsepipe(char **ps, char *es)
 {
   t_cmd *cmd;
+	int		tok;
 
   cmd = parseexec(ps, es);
-  if(peek(ps, es, "|"))
+  if(peek(ps, es, "|") && (*ps)[1] != '|')
 	{
-    gettoken(ps, es, 0, 0);
-    cmd = pipecmd(cmd, parsepipe(ps, es));
+    tok = gettoken(ps, es, 0, 0);
+		if (tok == '|')
+	  	cmd = pipecmd(cmd, parsepipe(ps, es));
   }
   return (cmd);
 }
@@ -413,7 +500,7 @@ t_cmd*	parseexec(char **ps, char *es)
     if (tok == 0)
       break;
     if (tok != 'a')
-      panic_test("syntax");
+      panic_test("syntax tok !=a ");
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
     argc++;
@@ -468,7 +555,7 @@ t_cmd	*nulterminate(t_cmd *cmd)
     nulterminate(pcmd->left);
     nulterminate(pcmd->right);
 	}
-	else if (cmd->type == LIST)
+	else if (cmd->type == LIST || cmd->type == AND_CMD || cmd->type == OR_CMD)
 	{
     lcmd = (t_listcmd*)cmd;
     nulterminate(lcmd->left);
@@ -560,8 +647,10 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argv;
 	data.envp = copy_env(envp); // free data.envs before exit
+	runcmd(parsecmd(argv[1]), &data);
+/*	printf("(=%d, |=%d, &=%d, <=%d, >=%d, +=%d\n",'(','|','&','<','>','+');
+	printf("&&=%d, ||=%d\n", AND_TOK, OR_TOK);
 	runcmd_test(parsecmd(argv[1]));
-//	runcmd(parsecmd(argv[1]), &data);
-	
+	*/
 	return (0);
 }
