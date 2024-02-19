@@ -9,12 +9,7 @@
 #define WHITESPACE " \t\r\n\v"
 //#define SYMBOLS  "<>|&()\"\'"
 #define SYMBOLS  "<>|&;()"
-//#ifndef ARG_MAX
-//# define ARG_MAX 100
-//#endif
-// #define MAXARGS 10 redifined in ARG_MAX
-// for testing pupose let us use ARG_MAX = 3 at first
-#define ARG_MAX 3
+//#define MAXARGS 3
 
 int fork1_test(void);  // Fork but panics on failure.
 void panic_test(char*);
@@ -504,7 +499,7 @@ t_cmd*	parseexec(char **ps, char *es)
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
     argc++;
-    if (argc >= ARG_MAX)
+    if (argc >= MAXARGS)
       panic_test("too many args");
     temp = parseredirs((t_cmd *)cmd, ps, es);
 		if (temp != (t_cmd *)cmd)
