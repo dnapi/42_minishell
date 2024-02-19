@@ -404,8 +404,9 @@ t_cmd	*parseline(char **ps, char *es)
 	    cmd_a = list_cmd(cmd_a, cmd_b, OR_CMD);
 		}
 		else
-			return (cmd_a);
+			break ; //return (cmd_a);
   }
+//  printf("str=%s\n", *ps);
   return (cmd_a);
 }
 
@@ -498,19 +499,21 @@ t_cmd*	parseexec(char **ps, char *es)
       panic_test("syntax tok !=a ");
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
+	// make node t_arg *node
+	// pass q and eq to arg_node maker
     argc++;
     if (argc >= MAXARGS)
       panic_test("too many args");
     temp = parseredirs((t_cmd *)cmd, ps, es);
-		if (temp != (t_cmd *)cmd)
-		{
-			// attach temp to last_node
-			if (last_node != (t_cmd *)cmd)
-				attach_to_node(last_node, temp);
-			else
-				ret = temp;
-			last_node = temp;
-		}
+	if (temp != (t_cmd *)cmd)
+	{
+		// attach temp to last_node
+		if (last_node != (t_cmd *)cmd)
+			attach_to_node(last_node, temp);
+		else
+			ret = temp;
+		last_node = temp;
+	}
   }
   cmd->argv[argc] = 0;
   cmd->eargv[argc] = 0;
