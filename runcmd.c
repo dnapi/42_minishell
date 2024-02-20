@@ -43,14 +43,21 @@ void	runcmd(t_cmd *cmd, t_data *data)
 	int				status;
 
 	if (cmd == NULL)
+	{
+		dprintf(2, "cmd = NULL pointer\n");
 		exit(1); // exit code? free heap allocated memory? why would this occur?
+	}
 	else if (cmd->type == EXEC)
 	{
 		ecmd = (t_execcmd *)cmd;
 		if (ecmd->argv[0] == NULL)
+		{
+			dprintf(2, "cmd->argv[0] = NULL pointer\n");
 			exit(1); // exit code? free heap allocated memory? why would this occur?
+		}
 		// expansion
 		execve(ecmd->argv[0], ecmd->argv, data->envp);
+		dprintf(2,"error: command not found: ");
 		panic(ecmd->argv[0], data, EXIT_CMD_NOT_FOUND);
 	}
 	else if (cmd->type == REDIR)
@@ -69,6 +76,11 @@ void	runcmd(t_cmd *cmd, t_data *data)
 		lcmd = (t_listcmd *)cmd;
 		//remove fork use data instead  to pass error status
 		//make int type of runcmd to return status;
+		if (lcmd->right->type == EXEC)
+		{
+			if (((t_execcmd *)(lcmd->right))->argv[0] == NULL)
+				panic("right command is not found after &&", data, 1);
+		}
 		pid1 = fork1(data);
 		if (pid1 == 0)
 			runcmd(lcmd->left, data);
@@ -88,6 +100,11 @@ void	runcmd(t_cmd *cmd, t_data *data)
 		lcmd = (t_listcmd *)cmd;
 		//remove fork use data instead  to pass error status
 		//make int type of runcmd to return status;
+		if (lcmd->right->type == EXEC)
+		{
+			if (((t_execcmd *)(lcmd->right))->argv[0] == NULL)
+				panic("right command is not found ||", data, 1);
+		}
 		pid1 = fork1(data);
 		if (pid1 == 0)
 			runcmd(lcmd->left, data);

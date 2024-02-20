@@ -8,7 +8,7 @@
 
 #define WHITESPACE " \t\r\n\v"
 //#define SYMBOLS  "<>|&()\"\'"
-#define SYMBOLS  "<>|&;()"
+#define SYMBOLS  "<>|&;()\\"
 //#define MAXARGS 3
 
 int fork1_test(void);  // Fork but panics on failure.
@@ -25,7 +25,7 @@ void runcmd_test(t_cmd *cmd)
   t_pipecmd *pcmd;
   t_redircmd *rcmd;
 
-	if(cmd == 0)
+	if(cmd == NULL)
 	{
 		printf("NULL Node\n");
     exit(1);
@@ -143,6 +143,26 @@ t_cmd	*execcmd(void)
   cmd = malloc(sizeof(*cmd));
   ft_memset(cmd, 0, sizeof(*cmd));
   cmd->type = EXEC;
+  return ((t_cmd*)cmd);
+}
+
+t_cmd	*argcmd(void)
+{
+  t_argcmd *cmd;
+
+  cmd = malloc(sizeof(*cmd));
+  ft_memset(cmd, 0, sizeof(*cmd));
+  cmd->type = ARG_NODE;
+  return ((t_cmd*)cmd);
+}
+
+t_cmd	*strcmd(int type)
+{
+  t_strcmd *cmd;
+
+  cmd = malloc(sizeof(*cmd));
+  ft_memset(cmd, 0, sizeof(*cmd));
+  cmd->type = type;
   return ((t_cmd*)cmd);
 }
 
@@ -349,6 +369,7 @@ t_cmd	*parsecmd(char *s)
 
   es = s + ft_strlen(s);
   cmd = parseline(&s, es);
+//	printf("leftour s=%s\n", s);
   peek(&s, es, "");
   if(s != es)
 	{
@@ -386,13 +407,17 @@ t_cmd	*parseline(char **ps, char *es)
 {
   t_cmd *cmd_a;
   t_cmd *cmd_b;
-	int	tok;
+	int		tok;
+	int		cond;
 
   cmd_a = parsepipe(ps, es);
-  //while (peek(ps, es, "&|"))
-  while (1)
+  cond = peek(ps, es, "&|");
+  while (cond && (*ps)[0] == (*ps)[1])
+  //while (1)
 	{
     tok = gettoken(ps, es, 0, 0);
+//		printf("tok = %d\n", tok);
+	//	printf("ps=%s\n", *ps);
 		if (tok == AND_TOK)
 		{
   		cmd_b = parsepipe(ps, es);
@@ -405,6 +430,7 @@ t_cmd	*parseline(char **ps, char *es)
 		}
 		else
 			break ; //return (cmd_a);
+  	cond = peek(ps, es, "&|");
   }
 //  printf("str=%s\n", *ps);
   return (cmd_a);
@@ -475,6 +501,7 @@ t_cmd*	parseexec(char **ps, char *es)
 {
   char	*q;
 	char	*eq;
+
   int		tok;
 	int		argc;
   t_execcmd *cmd;
@@ -486,7 +513,7 @@ t_cmd*	parseexec(char **ps, char *es)
 		return (parseblock(ps, es));
 	ret = execcmd();
 	cmd = (t_execcmd*)ret;
-
+	cmd->args = argcmd();
   argc = 0;
   ret = parseredirs(ret, ps, es);
 	last_node = ret;
@@ -496,28 +523,37 @@ t_cmd*	parseexec(char **ps, char *es)
     if (tok == 0)
       break;
     if (tok != 'a')
+		{
+			printf("leftover around %s \n", *ps);
       panic_test("syntax tok !=a ");
-    cmd->argv[argc] = q;
+		}
+		cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
+	//	printf("eq=%s\n", eq);
 	// make node t_arg *node
 	// pass q and eq to arg_node maker
     argc++;
     if (argc >= MAXARGS)
       panic_test("too many args");
     temp = parseredirs((t_cmd *)cmd, ps, es);
-	if (temp != (t_cmd *)cmd)
-	{
-		// attach temp to last_node
-		if (last_node != (t_cmd *)cmd)
-			attach_to_node(last_node, temp);
-		else
-			ret = temp;
-		last_node = temp;
-	}
+		if (temp != (t_cmd *)cmd)
+		{
+			// attach temp to last_node
+			if (last_node != (t_cmd *)cmd)
+				attach_to_node(last_node, temp);
+			else
+				ret = temp;
+			last_node = temp;
+		}
   }
   cmd->argv[argc] = 0;
   cmd->eargv[argc] = 0;
-  return (ret);
+	if (argc == 0)
+	{
+		dprintf(2, "check command around:...%s\n", (*ps) - 3);
+		panic_test("command is not specified, see parseexec");
+	}
+	return (ret);
 }
 
 // NUL-terminate all the counted strings.
