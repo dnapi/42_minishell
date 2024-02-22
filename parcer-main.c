@@ -477,43 +477,62 @@ t_cmd*	parseredirs_old(t_cmd *cmd, char **ps, char *es)
 }
 */
 
-t_cmd*	parseredirs(t_cmd *head, t_cmd *cmd, char **ps, char *es)
+t_cmd*	parse_one_redir(t_cmd *cmd, char **ps, char *es)
 {
 	int tok;
 	char *q, *eq;
-//	t_cmd	*head;
-	t_cmd	*new;
-	t_redircmd	*last;
+	t_cmd *ret;
 
-//	head = cmd;
-	last = NULL;
-	if (head->type == REDIR)
-	{
-		last = (t_redircmd *)head;
-		while (last->cmd->type == REDIR)
-			last = (t_redircmd *)last->cmd;
-	}
-	while (peek(ps, es, "<>"))
+	if (peek(ps, es, "<>"))
 	{
 		tok = gettoken(ps, es, 0, 0);
 		if (gettoken(ps, es, &q, &eq) != 'a')
 			panic_test("missing file for redirection");
 		if (tok == '<')
-			new = redircmd(cmd, q, eq, O_RDONLY, 0);
+			cmd = redircmd(cmd, q, eq, O_RDONLY, 0);
 		else if (tok == '>')
-			new = redircmd(cmd, q, eq, O_WRONLY | O_CREAT | O_TRUNC, 1);
+			cmd = redircmd(cmd, q, eq, O_WRONLY | O_CREAT | O_TRUNC, 1);
 		else if (tok == '+')
-			new = redircmd(cmd, q, eq, O_WRONLY| O_CREAT | O_APPEND, 1);
+			cmd = redircmd(cmd, q, eq, O_WRONLY| O_CREAT | O_APPEND, 1);
 		// else toc == "-"
 		// do heredoc
-		if (new == NULL)
-			return (NULL);
-		if (head->type == EXEC)
-			head = new;
-		else
-			last->cmd = new;
-		last = (t_redircmd *)new;
 	}
+	return (cmd);
+}
+t_cmd *parseredirs(t_cmd *cmd, char **ps, char *es)
+{
+	t_cmd *node;
+	t_redircmd *rcmd;
+
+	node = parse_one_redir(cmd, ps, es);
+	if (node->type != REDIR)
+		return (cmd);
+	rcmd = (t_redircmd *)node;
+	if (peek(ps, es, "<>"))
+		rcmd->cmd = parseredirs(cmd, ps, es);
+	return (node);
+}
+
+t_cmd *combine_redirs(t_cmd *head, t_cmd *extra, t_cmd *cmd)
+{
+	t_cmd *tail;
+	t_redircmd *last;
+
+	//tail = (t_redircmd *)head;
+	tail = head;
+	while (tail->type == REDIR)
+	{
+		if (((t_redircmd *)tail)->cmd == cmd)
+			break ;
+		tail = ((t_redircmd *)tail)->cmd;
+	}
+	if (tail->type == REDIR)
+	{
+		last = (t_redircmd *)tail;
+		last->cmd = extra;
+	}
+	else if (extra->type == REDIR)
+		return(extra); 
 	return (head);
 }
 
@@ -531,6 +550,7 @@ t_cmd	*parseblock(char **ps, char *es)
 	cmd = parseredirs(cmd, ps, es);
 	return (cmd);
 }
+
 
 void	attach_to_node(t_cmd *node, t_cmd *new)
 {
@@ -568,7 +588,8 @@ t_cmd*	parseexec(char **ps, char *es)
 	int		tok;
 	int		argc;
 	t_execcmd *cmd;
-	t_cmd *ret;
+	t_cmd *head;
+	t_cmd *extra;
 
 	//redir
 	t_cmd *last_node;
@@ -576,15 +597,13 @@ t_cmd*	parseexec(char **ps, char *es)
 
 	if (peek(ps, es, "("))
 		return (parseblock(ps, es));
-	ret = execcmd();
-	cmd = (t_execcmd*)ret;
+	head = execcmd();
+	cmd = (t_execcmd*)head;
 	cmd->args = argcmd();
 	argc = 0;
 
 	// REDIRs
-	ret = parseredirs(ret, ps, es);
-	last_node = ret;
-
+	head = parseredirs((t_cmd *)cmd, ps, es);
 	while(!peek(ps, es, "|)&;"))
 	{
 		tok = gettoken(ps, es, &q, &eq);
@@ -604,10 +623,9 @@ t_cmd*	parseexec(char **ps, char *es)
 	// printf("eq=%s\n", eq);
 	// make node t_arg *node
 	// pass q and eq to arg_node maker
-		// REDIR : &last_node, cmd , ps ,es
-//		do_redirs(last_node, cmd, ps, es);
 		
-		ret = parseredirs((t_cmd *)ret, (t_cmd *)cmd,  ps, es);
+		extra = parseredirs((t_cmd *)cmd,  ps, es);
+		head = combine_redirs(head, extra, (t_cmd *)cmd);
 	/*	if (temp != (t_cmd *)cmd)
 		{
 			// attaching temp to last_node
@@ -628,7 +646,7 @@ t_cmd*	parseexec(char **ps, char *es)
 		dprintf(2, "check command around:...%s\n", (*ps) - 3);
 		panic_test("command is not specified, see parseexec");
 	}
-	return (ret);
+	return (head);
 }
 
 // NUL-terminate all the counted strings.
@@ -756,11 +774,11 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argv;
 	data.envp = copy_env(envp); // free data.envs before exit
-//	runcmd(parsecmd(argv[1]), &data);
+	runcmd(parsecmd(argv[1]), &data);
 /*	printf("(=%d, |=%d, &=%d, <=%d, >=%d, +=%d\n",'(','|','&','<','>','+');
 	printf("&&=%d, ||=%d\n", AND_TOK, OR_TOK);
 */
-	runcmd_test(parsecmd(argv[1]));
+//	runcmd_test(parsecmd(argv[1]));
 
 	return (0);
 }
