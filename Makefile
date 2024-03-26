@@ -47,7 +47,6 @@ PARSER_FILES = constructors_tree.c \
 				parsing_utils.c \
 				nulterminate.c \
 				gettoken_peek.c
-				# ../remove_before_submission/runcmd_test.c
 STRINGS_FILES = make_argv_and_filename.c \
 				expand_var.c \
 				join_args.c \
@@ -85,16 +84,12 @@ SRCS = $(addprefix $(MAIN_DIR), $(MAIN_FILES)) \
 		$(addprefix $(EXEC_DIR), $(addprefix $(BUILTINS_DIR), $(BUILTINS_FILES)))
 
 # Object files including paths
-# OBJS = $(SRCS:.c=.o)
 SRC_FILES = $(MAIN_FILES) $(PARSER_FILES) $(STRINGS_FILES) $(EXEC_FILES) $(BUILTINS_FILES)
 OBJS = $(addprefix $(OBJS_DIR), $(SRC_FILES:.c=.o))
 
-# OBJ_FILES = $(SRCS:.c=.o)
-# OBJS = $(patsubst %, $(OBJS_DIR)%, $(SRC_FILES:.c=.o))
-
 LIBFT = $(addprefix $(LIBFT_DIR), libft.a)
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror
 
 # Color scheme
 COLOR_GREEN = \033[0;32m

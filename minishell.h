@@ -6,7 +6,7 @@
 /*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 21:14:29 by ixu               #+#    #+#             */
-/*   Updated: 2024/03/26 11:48:14 by ixu              ###   ########.fr       */
+/*   Updated: 2024/03/26 12:16:59 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 // write, close, dup, dup2, fork, pipe, access, execve, unlink
 # include <unistd.h>
 
-// FILE CONTROL
+// file control
 # include <fcntl.h>
 
 // stat
@@ -43,7 +43,7 @@
 // tcgetattr, tcsetattr
 # include <termios.h>
 
-//directory  entity
+// directory  entity
 # include <dirent.h>
 
 // macros for (error) messages
@@ -333,7 +333,9 @@ t_strcmd	*strcmd(int type, char *start, char *end);
 t_strstate	*make_strstate(char *pos, char *finish);
 t_aststate	*make_aststate(char *pos, char *finish);
 
+// parsestr.c
 t_strcmd	*parsestr(t_strstate *state);
+
 // parseexec.c
 t_cmd		*parseexec(char **ps, char *es, t_aststate *ast);
 t_cmd		*parseredirs(t_cmd *cmd, char **ps, char *es, t_aststate *ast);
@@ -344,7 +346,7 @@ int			write_heredoc(char *line, int fd_heredoc, t_strstate *state);
 int			heredoc_stop_iter(t_strstate *state, char *line, \
 			int malloc_err, int read_err);
 
-// make_ask.c
+// make_ast.c
 int			make_ast(t_cmd **p_cmd, char *s, int *num_heredoc);
 t_cmd		*parsecmd(char *s, int *status, int *num_heredoc);
 
@@ -352,10 +354,10 @@ t_cmd		*parsecmd(char *s, int *status, int *num_heredoc);
 t_cmd		*parseblock(char **ps, char *es, t_aststate *ast);
 t_cmd		*parseline(char **ps, char *es, t_aststate *ast);
 
-//parseredirs.c
+// parseredirs.c
 t_cmd		*combine_redirs(t_cmd *head, t_cmd *extra, t_cmd *cmd);
 
-//parse_word_singl_var.c
+// parse_word_singl_var.c
 t_strcmd	*parse_word(t_strstate *state);
 t_strcmd	*parse_str_till(t_strstate *state, char *stop_toks);
 t_strcmd	*parse_single(t_strstate *state);
@@ -375,7 +377,7 @@ t_cmd		*nulterminate(t_cmd *cmd);
 int			panic_parser(char *s, int err);
 int			select_token(char **pnt);
 
-//gettoken_peek.c
+// gettoken_peek.c
 int			gettoken(char **ps, char *es, char **q, char **eq);
 int			peek(char **ps, char *es, char *toks);
 const char	*token_type_to_str(t_token_type token);
@@ -391,10 +393,6 @@ int			fork1(t_data *data);
 int			restore_stdin_n_stdout(t_data *data);
 char		*get_cmd_path(char **argv, t_data *data);
 char		**copy_env_lst_to_arr(t_env *env_lst, t_data *data);
-
-// to be removed at some point
-// void		runcmd_test(t_cmd *cmd, t_data *data);
-// void		printf_nonprintable(char *str);
 
 // handling builtins
 int			is_builtin(char **argv, t_data **data);
@@ -416,8 +414,6 @@ t_env		*sort_lst(t_env *env_lst, int *malloc_err);
 
 // handling env
 char		**copy_env(char **envp);
-t_env		*copy_env_arr_to_lst(char **envp);
-char		**get_env_paths(char **envp, t_data *data);
 
 // freeing
 void		free_arr(char **arr);
@@ -443,6 +439,7 @@ int			do_single_match(int i, t_wildcard *wild, char *str, DIR *dir);
 int			free_wildcard(t_wildcard *wild, int clean_list, int error);
 int			init_wildcard(t_wildcard *wild, t_execcmd *cmd);
 int			init_wildcard_redir(t_wildcard *wild, t_redircmd *cmd);
+
 // match_to_files.c
 int			match_to_files(t_wildcard *wild);
 int			make_sorted_argv(t_wildcard *wild, int be_sorted);

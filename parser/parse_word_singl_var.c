@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   parse_word_singl_var.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 10:33:30 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/25 16:45:12 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:19:32 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-// parse_word_singl_var.c
 t_strcmd	*parse_word(t_strstate *state)
 {
 	char		*s;

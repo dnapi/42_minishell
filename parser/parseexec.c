@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parseexec.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 10:33:43 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/25 15:27:28 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:19:38 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-#include <stdio.h>
 
 int	extend_arg_node(t_argcmd **arg, char *q, char *eq)
 {

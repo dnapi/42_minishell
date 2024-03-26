@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   parseline.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 10:33:53 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/26 11:18:45 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:22:00 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-// parseline.c
 t_cmd	*parsepipe(char **ps, char *es,	t_aststate *ast)
 {
 	t_cmd	*cmd;
@@ -87,6 +86,7 @@ t_cmd	*parseline(char **ps, char *es, t_aststate *ast)
 }
 
 // redir after block is not supported, i.e. it is syntax error
+
 t_cmd	*parseblock(char **ps, char *es, t_aststate *ast)
 {
 	t_cmd	*cmd;

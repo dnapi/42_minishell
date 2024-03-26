@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   heapsort_str.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 11:06:25 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/24 11:06:28 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:23:13 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
 // i is current root node, and n is total number of el in arr
+
 void	heapify(char **arr, int n, int i)
 {
 	int		largest;

@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   parsing_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 10:48:04 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/24 12:51:32 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:22:25 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-// parsing_utils.c
 void	increase_s_quotes(char **pnt_s, int *p_quotes)
 {
 	if (**pnt_s == '\"' && p_quotes[1] == 0)

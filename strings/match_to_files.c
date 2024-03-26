@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   match_to_files.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 11:15:56 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/24 11:26:11 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:23:53 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ int	panic_wildcard(t_wildcard *wild)
 }
 
 // readdir and write matches to p_list given cmd->argv
+
 int	match_to_files(t_wildcard *wild)
 {
 	struct dirent	*entry;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   make_argv_and_filename.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 11:45:48 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/25 13:42:36 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:23:47 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,6 @@ int	is_str_with_only_var(t_strcmd *str)
 	return (1);
 }
 
-//			printf_nonprintable(rcmd->file);
-//			replace_str(rcmd->file, ASCII_WILD, '*');
 int	make_filename(t_redircmd *rcmd, t_data *data)
 {
 	int	i;

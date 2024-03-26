@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   wildcard_star.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apimikov <apimikov@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 11:14:51 by apimikov          #+#    #+#             */
-/*   Updated: 2024/03/25 14:17:28 by apimikov         ###   ########.fr       */
+/*   Updated: 2024/03/26 12:24:17 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-#include <dirent.h>
 
 int	wildcard_star(t_execcmd *cmd)
 {

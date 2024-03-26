@@ -6,7 +6,7 @@
 /*   By: ixu <ixu@student.hive.fi>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 20:29:30 by ixu               #+#    #+#             */
-/*   Updated: 2024/03/25 20:05:43 by ixu              ###   ########.fr       */
+/*   Updated: 2024/03/26 12:18:29 by ixu              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,17 +74,6 @@ static void	cleanup_before_exit(t_data *data)
 	rl_clear_history();
 }
 
-// for testmode add the following after make_ast funciton
-			/*
-			if (TESTMODE)
-			{
-				ft_dprintf(2, "------------->TESTMODE<----------\n");
-			//	cmd = parsecmd(data.buf, NULL);
-				if (data.tree)
-					runcmd_test(data.tree, &data);
-				ft_dprintf(2,"------------->  END   <----------\n");
-			}
-			*/
 int	main(int argc, char **argv, char **envp)
 {
 	t_data	data;
